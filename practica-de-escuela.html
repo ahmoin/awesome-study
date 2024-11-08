@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Practica De Escuela - awesome study</title>
+    <style>
+      .choices {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin: 20px 0;
+      }
+
+      .choice-btn {
+        padding: 10px;
+        font-size: 16px;
+        cursor: pointer;
+        border: 1px solid #ccc;
+        background: white;
+        border-radius: 5px;
+        text-align: left;
+      }
+
+      .choice-btn:hover {
+        background: #f0f0f0;
+      }
+
+      .choice-btn.correct {
+        background: #90ee90;
+      }
+
+      .choice-btn.incorrect {
+        background: #ffb6c1;
+      }
+
+      ol li {
+        display: flex;
+        gap: 5px;
+      }
+
+      .word {
+        flex-shrink: 0; /* Prevents the word from shrinking */
+      }
+
+      .definition {
+        filter: blur(4px);
+        transition: filter 0.3s ease;
+      }
+
+      .definition:hover {
+        filter: blur(0);
+      }
+
+      #question-container li,
+      #vocab-container li {
+        filter: none;
+      }
+    </style>
+  </head>
+  <body>
+    <header>awesome study - <a href="index.html">home</a></header>
+    <h1>Practica De Escuela</h1>
+
+    <ol>
+      <li>
+        <span class="word">hay que -</span>
+        <span class="definition">one has to</span>
+      </li>
+      <li>
+        <span class="word">traer -</span>
+        <span class="definition">to bring</span>
+      </li>
+      <li>
+        <span class="word">saber -</span>
+        <span class="definition">to know</span>
+      </li>
+      <li>
+        <span class="word">decir -</span> <span class="definition">to say</span>
+      </li>
+      <li>
+        <span class="word">dar -</span> <span class="definition">to give</span>
+      </li>
+      <li>
+        <span class="word">conocer -</span>
+        <span class="definition">to know</span>
+      </li>
+      <li>
+        <span class="word">poder / puede -</span>
+        <span class="definition">can / to be able to</span>
+      </li>
+      <li>
+        <span class="word">lo que -</span> <span class="definition">which</span>
+      </li>
+      <li>
+        <span class="word">entender -</span>
+        <span class="definition">to understand</span>
+      </li>
+      <li>
+        <span class="word">empezar -</span>
+        <span class="definition">to start</span>
+      </li>
+      <li>
+        <span class="word">repetir -</span>
+        <span class="definition">to repeat</span>
+      </li>
+      <li>
+        <span class="word">querer -</span>
+        <span class="definition">to want</span>
+      </li>
+      <li>
+        <span class="word">acaba de -</span>
+        <span class="definition">just</span>
+      </li>
+      <li>
+        <span class="word">todos -</span> <span class="definition">all</span>
+      </li>
+      <li>
+        <span class="word">aprender -</span>
+        <span class="definition">to learn</span>
+      </li>
+      <li>
+        <span class="word">aprender de memoria -</span>
+        <span class="definition">to memorize</span>
+      </li>
+      <li>
+        <span class="word">creerlo -</span>
+        <span class="definition">believe it</span>
+      </li>
+      <li>
+        <span class="word">después -</span>
+        <span class="definition">after</span>
+      </li>
+      <li>
+        <span class="word">llegar -</span>
+        <span class="definition">to arrive</span>
+      </li>
+      <li>
+        <span class="word">hacer -</span> <span class="definition">to do</span>
+      </li>
+      <li>
+        <span class="word">hacerlo -</span>
+        <span class="definition">to do it</span>
+      </li>
+      <li>
+        <span class="word">hacerlo bien -</span>
+        <span class="definition">to do it well</span>
+      </li>
+      <li>
+        <span class="word">alguno -</span> <span class="definition">some</span>
+      </li>
+      <li>
+        <span class="word">ninguno -</span> <span class="definition">none</span>
+      </li>
+      <li>
+        <span class="word">cuando -</span> <span class="definition">when</span>
+      </li>
+      <li>
+        <span class="word">sobre -</span> <span class="definition">about</span>
+      </li>
+      <li>
+        <span class="word">allí -</span> <span class="definition">there</span>
+      </li>
+      <li>
+        <span class="word">demasiadas -</span>
+        <span class="definition">too many</span>
+      </li>
+      <li>
+        <span class="word">pienso (pensar) -</span>
+        <span class="definition">I think</span>
+      </li>
+      <li>
+        <span class="word">armario -</span>
+        <span class="definition">locker</span>
+      </li>
+      <li>
+        <span class="word">otros -</span> <span class="definition">others</span>
+      </li>
+    </ol>
+
+    <div id="question-container">
+      <h2>Conjugate the verb: <span id="verb"></span></h2>
+      <p>Subject: <span id="subject"></span></p>
+
+      <div class="answer-section">
+        <div id="verb-choices" class="choices"></div>
+        <button onclick="generateNewQuestion()">Next Question</button>
+      </div>
+
+      <div id="feedback" class="feedback"></div>
+    </div>
+
+    <div id="practice-selector">
+      <button onclick="switchToVerbs()">Practice Verb Conjugations</button>
+      <button onclick="switchToVocab()">Practice Vocabulary</button>
+    </div>
+
+    <div id="vocab-container" style="display: none">
+      <h2>Translate: <span id="word-to-translate"></span></h2>
+      <p>Direction: <span id="direction"></span></p>
+
+      <div class="answer-section">
+        <div id="vocab-choices" class="choices">
+          <!-- Choices will be inserted here -->
+        </div>
+        <button onclick="generateNewVocabQuestion()">Next Question</button>
+      </div>
+
+      <div id="vocabFeedback" class="feedback"></div>
+    </div>
+
+    <script>
+      const verbs = {
+        saber: {
+          yo: "sé",
+          tú: "sabes",
+          él: "sabe",
+          ella: "sabe",
+          usted: "sabe",
+          nosotros: "sabemos",
+          vosotros: "sabéis",
+          ellos: "saben",
+          ellas: "saben",
+          ustedes: "saben",
+        },
+        decir: {
+          yo: "digo",
+          tú: "dices",
+          él: "dice",
+          ella: "dice",
+          usted: "dice",
+          nosotros: "decimos",
+          vosotros: "decís",
+          ellos: "dicen",
+          ellas: "dicen",
+          ustedes: "dicen",
+        },
+        dar: {
+          yo: "doy",
+          tú: "das",
+          él: "da",
+          ella: "da",
+          usted: "da",
+          nosotros: "damos",
+          vosotros: "dais",
+          ellos: "dan",
+          ellas: "dan",
+          ustedes: "dan",
+        },
+        conocer: {
+          yo: "conozco",
+          tú: "conoces",
+          él: "conoce",
+          ella: "conoce",
+          usted: "conoce",
+          nosotros: "conocemos",
+          vosotros: "conocéis",
+          ellos: "conocen",
+          ellas: "conocen",
+          ustedes: "conocen",
+        },
+      };
+
+      let currentVerb;
+      let currentSubject;
+      let correctAnswer;
+
+      function generateChoices(correct, pool, num = 4) {
+        let choices = [correct];
+
+        // Make sure we don't include the correct answer in the pool
+        pool = pool.filter((item) => item !== correct);
+
+        // Randomly select wrong answers
+        while (choices.length < num && pool.length > 0) {
+          const randomIndex = Math.floor(Math.random() * pool.length);
+          const choice = pool[randomIndex];
+          if (!choices.includes(choice)) {
+            // Avoid duplicates
+            choices.push(choice);
+          }
+          pool.splice(randomIndex, 1);
+        }
+
+        // Shuffle choices
+        return choices.sort(() => Math.random() - 0.5);
+      }
+
+      function createChoiceButtons(
+        choices,
+        containerId,
+        correctAnswer,
+        isVerb = true
+      ) {
+        const container = document.getElementById(containerId);
+        container.innerHTML = "";
+
+        choices.forEach((choice) => {
+          const button = document.createElement("button");
+          button.className = "choice-btn";
+          button.textContent = choice;
+
+          button.onclick = () => {
+            // Disable all buttons
+            document
+              .querySelectorAll(".choice-btn")
+              .forEach((btn) => (btn.disabled = true));
+
+            if (choice === correctAnswer) {
+              button.classList.add("correct");
+              const feedback = document.getElementById(
+                isVerb ? "feedback" : "vocabFeedback"
+              );
+              feedback.textContent = "¡Correcto!";
+              feedback.className = "feedback correct";
+            } else {
+              button.classList.add("incorrect");
+              // Show correct answer
+              document.querySelectorAll(".choice-btn").forEach((btn) => {
+                if (btn.textContent === correctAnswer) {
+                  btn.classList.add("correct");
+                }
+              });
+              const feedback = document.getElementById(
+                isVerb ? "feedback" : "vocabFeedback"
+              );
+              feedback.textContent = `Incorrect. The correct answer is: ${correctAnswer}`;
+              feedback.className = "feedback incorrect";
+            }
+          };
+
+          container.appendChild(button);
+        });
+      }
+
+      function generateNewQuestion() {
+        const verbList = Object.keys(verbs);
+        const subjects = [
+          "yo",
+          "tú",
+          "él",
+          "ella",
+          "usted",
+          "nosotros",
+          "vosotros",
+          "ellos",
+          "ellas",
+          "ustedes",
+        ];
+
+        currentVerb = verbList[Math.floor(Math.random() * verbList.length)];
+        currentSubject = subjects[Math.floor(Math.random() * subjects.length)];
+        correctAnswer = verbs[currentVerb][currentSubject];
+
+        // Generate pool of wrong answers
+        let answerPool = [];
+        Object.values(verbs).forEach((verbForms) => {
+          Object.values(verbForms).forEach((conjugation) => {
+            if (
+              !answerPool.includes(conjugation) &&
+              conjugation !== correctAnswer
+            ) {
+              answerPool.push(conjugation);
+            }
+          });
+        });
+
+        document.getElementById("verb").textContent = currentVerb;
+        document.getElementById("subject").textContent = currentSubject;
+        document.getElementById("feedback").textContent = "";
+
+        const choices = generateChoices(correctAnswer, answerPool);
+        createChoiceButtons(choices, "verb-choices", correctAnswer);
+      }
+
+      // Add vocabulary list
+      const vocabulary = {
+        "hay que": "one has to",
+        traer: "to bring",
+        saber: "to know",
+        decir: "to say",
+        dar: "to give",
+        conocer: "to know",
+        poder: "can / to be able to",
+        "lo que": "which",
+        entender: "to understand",
+        empezar: "to start",
+        repetir: "to repeat",
+        querer: "to want",
+        "acaba de": "just",
+        todos: "all",
+        aprender: "to learn",
+        "aprender de memoria": "to memorize",
+        creerlo: "believe it",
+        después: "after",
+        llegar: "to arrive",
+        hacer: "to do",
+        hacerlo: "to do it",
+        "hacerlo bien": "to do it well",
+        alguno: "some",
+        ninguno: "none",
+        cuando: "when",
+        sobre: "about",
+        allí: "there",
+        demasiadas: "too many",
+        pienso: "I think",
+        armario: "locker",
+        otros: "others",
+      };
+
+      let currentWord;
+      let currentTranslation;
+      let isSpanishToEnglish;
+
+      function switchToVerbs() {
+        document.getElementById("question-container").style.display = "block";
+        document.getElementById("vocab-container").style.display = "none";
+        generateNewQuestion();
+      }
+
+      function switchToVocab() {
+        document.getElementById("question-container").style.display = "none";
+        document.getElementById("vocab-container").style.display = "block";
+        generateNewVocabQuestion();
+      }
+
+      function generateNewVocabQuestion() {
+        const words = Object.keys(vocabulary);
+        currentWord = words[Math.floor(Math.random() * words.length)];
+        currentTranslation = vocabulary[currentWord];
+        isSpanishToEnglish = Math.random() < 0.5;
+
+        const questionWord = isSpanishToEnglish
+          ? currentWord
+          : currentTranslation;
+        const correctAnswer = isSpanishToEnglish
+          ? currentTranslation
+          : currentWord;
+
+        // Generate pool of wrong answers
+        const answerPool = isSpanishToEnglish
+          ? Object.values(vocabulary).filter((v) => v !== currentTranslation)
+          : Object.keys(vocabulary).filter((k) => k !== currentWord);
+
+        document.getElementById("word-to-translate").textContent = questionWord;
+        document.getElementById("direction").textContent = isSpanishToEnglish
+          ? "Spanish to English"
+          : "English to Spanish";
+        document.getElementById("vocabFeedback").textContent = "";
+
+        const choices = generateChoices(correctAnswer, answerPool);
+        createChoiceButtons(choices, "vocab-choices", correctAnswer, false);
+      }
+
+      // Initialize with verb practice
+      switchToVerbs();
+    </script>
+  </body>
+</html>
