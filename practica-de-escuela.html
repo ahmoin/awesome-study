@@ -56,6 +56,45 @@
       #vocab-container li {
         filter: none;
       }
+
+      .word-bank {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin: 20px 0;
+        padding: 20px;
+        background: #f5f5f5;
+        border-radius: 8px;
+      }
+
+      .word-piece {
+        padding: 8px 16px;
+        background: white;
+        border: 2px solid #ddd;
+        border-radius: 20px;
+        cursor: pointer;
+        user-select: none;
+      }
+
+      .word-piece.selected {
+        background: #e6f3ff;
+        border-color: #2196f3;
+      }
+
+      .sentence-construction {
+        min-height: 100px;
+        padding: 20px;
+        background: #fff;
+        border: 2px dashed #ddd;
+        border-radius: 8px;
+        margin: 20px 0;
+      }
+
+      #built-sentence {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
     </style>
   </head>
   <body>
@@ -193,6 +232,7 @@
     <div id="practice-selector">
       <button onclick="switchToVerbs()">Practice Verb Conjugations</button>
       <button onclick="switchToVocab()">Practice Vocabulary</button>
+      <button onclick="switchToSentences()">Practice Sentence Building</button>
     </div>
 
     <div id="vocab-container" style="display: none">
@@ -207,6 +247,25 @@
       </div>
 
       <div id="vocabFeedback" class="feedback"></div>
+    </div>
+
+    <div id="sentence-builder" style="display: none; padding-bottom: 200px">
+      <h2>Build a sentence that makes sense:</h2>
+      <p id="sentence-type"></p>
+
+      <div class="sentence-workspace">
+        <div id="word-bank" class="word-bank"></div>
+        <div id="sentence-construction" class="sentence-construction">
+          <p>Your sentence:</p>
+          <div id="built-sentence"></div>
+        </div>
+      </div>
+
+      <button id="checkSentenceBtn" onclick="checkSentence()">
+        Check Answer
+      </button>
+      <button onclick="generateNewSentence()">New Sentence</button>
+      <div id="sentenceFeedback" class="feedback"></div>
     </div>
 
     <script>
@@ -268,21 +327,17 @@
       function generateChoices(correct, pool, num = 4) {
         let choices = [correct];
 
-        // Make sure we don't include the correct answer in the pool
         pool = pool.filter((item) => item !== correct);
 
-        // Randomly select wrong answers
         while (choices.length < num && pool.length > 0) {
           const randomIndex = Math.floor(Math.random() * pool.length);
           const choice = pool[randomIndex];
           if (!choices.includes(choice)) {
-            // Avoid duplicates
             choices.push(choice);
           }
           pool.splice(randomIndex, 1);
         }
 
-        // Shuffle choices
         return choices.sort(() => Math.random() - 0.5);
       }
 
@@ -301,7 +356,6 @@
           button.textContent = choice;
 
           button.onclick = () => {
-            // Disable all buttons
             document
               .querySelectorAll(".choice-btn")
               .forEach((btn) => (btn.disabled = true));
@@ -352,7 +406,6 @@
         currentSubject = subjects[Math.floor(Math.random() * subjects.length)];
         correctAnswer = verbs[currentVerb][currentSubject];
 
-        // Generate pool of wrong answers
         let answerPool = [];
         Object.values(verbs).forEach((verbForms) => {
           Object.values(verbForms).forEach((conjugation) => {
@@ -373,7 +426,6 @@
         createChoiceButtons(choices, "verb-choices", correctAnswer);
       }
 
-      // Add vocabulary list
       const vocabulary = {
         "hay que": "one has to",
         traer: "to bring",
@@ -415,13 +467,22 @@
       function switchToVerbs() {
         document.getElementById("question-container").style.display = "block";
         document.getElementById("vocab-container").style.display = "none";
+        document.getElementById("sentence-builder").style.display = "none";
         generateNewQuestion();
       }
 
       function switchToVocab() {
         document.getElementById("question-container").style.display = "none";
         document.getElementById("vocab-container").style.display = "block";
+        document.getElementById("sentence-builder").style.display = "none";
         generateNewVocabQuestion();
+      }
+
+      function switchToSentences() {
+        document.getElementById("question-container").style.display = "none";
+        document.getElementById("vocab-container").style.display = "none";
+        document.getElementById("sentence-builder").style.display = "block";
+        generateNewSentence();
       }
 
       function generateNewVocabQuestion() {
@@ -450,6 +511,263 @@
 
         const choices = generateChoices(correctAnswer, answerPool);
         createChoiceButtons(choices, "vocab-choices", correctAnswer, false);
+      }
+
+      const sentencePatterns = {
+        "hay que": {
+          structure: ["hay que", "verb-infinitive", "complement"],
+          examples: [
+            {
+              words: ["hay que", "estudiar", "para el examen"],
+              translation: "You have to study for the exam",
+            },
+            {
+              words: ["hay que", "entregar", "la tarea"],
+              translation: "You have to turn in the homework",
+            },
+            {
+              words: ["hay que", "llegar", "a tiempo"],
+              translation: "You have to arrive on time",
+            },
+          ],
+        },
+        "se prohibe": {
+          structure: ["se prohibe", "verb-infinitive", "complement"],
+          examples: [
+            {
+              words: ["se prohibe", "hablar", "durante el examen"],
+              translation: "Talking is prohibited during the exam",
+            },
+            {
+              words: ["se prohibe", "correr", "en los pasillos"],
+              translation: "Running is prohibited in the hallways",
+            },
+            {
+              words: ["se prohibe", "comer", "en la biblioteca"],
+              translation: "Eating is prohibited in the library",
+            },
+          ],
+        },
+        "tengo que": {
+          structure: ["tengo que", "verb-infinitive", "complement"],
+          examples: [
+            {
+              words: ["tengo que", "estudiar", "para el examen"],
+              translation: "I have to study for the exam",
+            },
+            {
+              words: ["tengo que", "ir", "a la biblioteca"],
+              translation: "I have to go to the library",
+            },
+            {
+              words: ["tengo que", "terminar", "mi proyecto"],
+              translation: "I have to finish my project",
+            },
+          ],
+        },
+      };
+
+      const infinitiveVerbs = [
+        "estudiar", // to study
+        "aprender", // to learn
+        "escribir", // to write
+        "leer", // to read
+        "entregar", // to turn in
+        "terminar", // to finish
+        "presentar", // to present
+        "practicar", // to practice
+        "aprender de memoria", // to memorize
+        "repasar", // to review
+        "escuchar", // to listen
+        "preguntar", // to ask
+        "responder", // to answer
+        "tomar", // to take (notes)
+        "hacer", // to do
+      ];
+
+      const complements = [
+        "para el examen", // for the exam
+        "la tarea", // the homework
+        "en la biblioteca", // in the library
+        "en clase", // in class
+        "los apuntes", // the notes
+        "el proyecto", // the project
+        "la presentación", // the presentation
+        "antes de clase", // before class
+        "después de clase", // after class
+        "con mi grupo", // with my group
+        "el vocabulario", // the vocabulary
+        "la gramática", // the grammar
+        "en el laboratorio", // in the laboratory
+        "durante la clase", // during class
+        "en mi cuaderno", // in my notebook
+      ];
+
+      let currentPattern;
+      let currentSentence;
+      let selectedWords = [];
+
+      function generateNewSentence() {
+        // Pick random pattern
+        const patterns = Object.keys(sentencePatterns);
+        currentPattern = patterns[Math.floor(Math.random() * patterns.length)];
+
+        // Create word bank
+        const wordBank = document.getElementById("word-bank");
+        wordBank.innerHTML = "";
+
+        // Add pattern starter
+        addWordToBank(currentPattern);
+
+        // Add random verbs and complements
+        for (let i = 0; i < 3; i++) {
+          addWordToBank(
+            infinitiveVerbs[Math.floor(Math.random() * infinitiveVerbs.length)]
+          );
+          addWordToBank(
+            complements[Math.floor(Math.random() * complements.length)]
+          );
+        }
+
+        // Reset sentence construction area
+        document.getElementById("built-sentence").innerHTML = "";
+        document.getElementById("sentenceFeedback").textContent = "";
+        document.getElementById(
+          "sentence-type"
+        ).textContent = `Create a sentence using "${currentPattern}"`;
+
+        selectedWords = [];
+        document.getElementById("checkSentenceBtn").disabled = false;
+      }
+
+      function addWordToBank(word) {
+        const wordPiece = document.createElement("div");
+        wordPiece.className = "word-piece";
+        wordPiece.textContent = word;
+        wordPiece.onclick = () => toggleWord(word, wordPiece);
+        document.getElementById("word-bank").appendChild(wordPiece);
+      }
+
+      function toggleWord(word, element) {
+        if (element.classList.contains("selected")) {
+          element.classList.remove("selected");
+          selectedWords = selectedWords.filter((w) => w !== word);
+        } else {
+          element.classList.add("selected");
+          selectedWords.push(word);
+        }
+
+        updateBuiltSentence();
+      }
+
+      function updateBuiltSentence() {
+        const sentenceDiv = document.getElementById("built-sentence");
+        sentenceDiv.innerHTML = "";
+
+        selectedWords.forEach((word) => {
+          const wordSpan = document.createElement("span");
+          wordSpan.className = "word-piece";
+          wordSpan.textContent = word;
+          sentenceDiv.appendChild(wordSpan);
+        });
+      }
+
+      function checkSentence() {
+        const pattern = sentencePatterns[currentPattern];
+        const feedback = document.getElementById("sentenceFeedback");
+
+        if (selectedWords.length !== 3) {
+          feedback.textContent = "Your sentence should have three parts!";
+          feedback.className = "feedback incorrect";
+          return;
+        }
+
+        if (selectedWords[0] !== currentPattern) {
+          feedback.textContent = `Your sentence should start with "${currentPattern}"!`;
+          feedback.className = "feedback incorrect";
+          return;
+        }
+
+        if (!infinitiveVerbs.includes(selectedWords[1])) {
+          feedback.textContent =
+            "The second word should be an infinitive verb!";
+          feedback.className = "feedback incorrect";
+          return;
+        }
+
+        if (!complements.includes(selectedWords[2])) {
+          feedback.textContent = "The third word should be a complement!";
+          feedback.className = "feedback incorrect";
+          return;
+        }
+
+        const translations = {
+          "hay que": "You have to",
+          "se prohibe": "It is prohibited to",
+          "tengo que": "I have to",
+        };
+
+        const verbTranslations = {
+          estudiar: "study",
+          aprender: "learn",
+          escribir: "write",
+          leer: "read",
+          entregar: "turn in",
+          terminar: "finish",
+          presentar: "present",
+          practicar: "practice",
+          "aprender de memoria": "memorize",
+          repasar: "review",
+          escuchar: "listen",
+          preguntar: "ask",
+          responder: "answer",
+          tomar: "take",
+          hacer: "do",
+        };
+
+        const complementTranslations = {
+          "para el examen": "for the exam",
+          "la tarea": "the homework",
+          "en la biblioteca": "in the library",
+          "en clase": "in class",
+          "los apuntes": "the notes",
+          "el proyecto": "the project",
+          "la presentación": "the presentation",
+          "antes de clase": "before class",
+          "después de clase": "after class",
+          "con mi grupo": "with my group",
+          "el vocabulario": "the vocabulary",
+          "la gramática": "the grammar",
+          "en el laboratorio": "in the laboratory",
+          "durante la clase": "during class",
+          "en mi cuaderno": "in my notebook",
+        };
+
+        // Build translation
+        let translation = "";
+        if (currentPattern === "se prohibe") {
+          translation =
+            translations[currentPattern] +
+            " " +
+            verbTranslations[selectedWords[1]] +
+            " " +
+            complementTranslations[selectedWords[2]];
+        } else {
+          translation =
+            translations[currentPattern] +
+            " " +
+            verbTranslations[selectedWords[1]] +
+            " " +
+            complementTranslations[selectedWords[2]];
+        }
+
+        feedback.innerHTML = `
+          <p class="feedback correct">¡Correcto!</p>
+          <p>Spanish: ${selectedWords.join(" ")}</p>
+          <p>English: ${translation}</p>
+        `;
+
+        document.getElementById("checkSentenceBtn").disabled = true;
       }
 
       // Initialize with verb practice
